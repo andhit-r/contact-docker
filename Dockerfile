@@ -1,4 +1,5 @@
 # STEP 1: Builder Stage - Untuk mengklon repositori dan menyiapkan kode
+# Ubah
 # Kita bisa menggunakan image yang lebih ringan seperti alpine/git jika hanya untuk git clone
 FROM alpine/git as builder
 
