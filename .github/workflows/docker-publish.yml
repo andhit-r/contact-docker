@@ -4,7 +4,7 @@ name: Publish Docker Image
 # Event yang akan memicu workflow ini
 on:
   push:
-    # Workflow akan berjalan ketika ada push ke branch 'main'
+    # Workflow akan berjalan ketika ada push ke branch 'master'
     branches:
       - master
     # Opsional: Jika Anda ingin memicu secara manual dari GitHub UI
@@ -20,12 +20,10 @@ jobs:
     # Langkah-langkah (steps) yang akan dieksekusi
     steps:
       # Langkah 1: Checkout kode dari repositori GitHub
-      # Ini akan mengambil semua file (termasuk Dockerfile dan 000-default.conf)
       - name: Checkout code
         uses: actions/checkout@v4
 
       # Langkah 2: Login ke Docker Hub
-      # Menggunakan GitHub Secrets untuk kredensial yang aman
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -33,7 +31,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # Langkah 3: Ekstrak metadata image (tags dan labels) dari Git
-      # Ini berguna untuk penamaan image yang konsisten (misalnya, versi Git commit SHA)
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -41,19 +38,17 @@ jobs:
           images: andhitr/php-contact-app # Ganti dengan nama image Anda di Docker Hub
           tags: |
             type=raw,value=latest,enable=true # Selalu tag sebagai 'latest'
-            type=sha,enable=true,prefix={{workflow.ref}}- # Tag dengan SHA commit (untuk versi spesifik)
+            type=sha,enable=true # Tag dengan SHA commit penuh (misal: 12345abcdef)
+            type=ref,event=branch,enable=true # Tag dengan nama branch (misal: master)
+            # Anda bisa menambahkan tag lain jika diperlukan, misalnya versi aplikasi
+            # type=semver,pattern={{version}} # Jika Anda menggunakan semantic versioning di Git tags
 
       # Langkah 4: Build dan Push image Docker
-      # Menggunakan Dockerfile yang sudah kita buat sebelumnya
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: . # Konteks build adalah root repositori (tempat Dockerfile berada)
-          file: ./Dockerfile # Lokasi Dockerfile
-          push: true # Aktifkan push ke Docker Hub
-          tags: ${{ steps.meta.outputs.tags }} # Menggunakan tags yang diekstrak dari metadata
-          labels: ${{ steps.meta.outputs.labels }} # Menggunakan labels yang diekstrak dari metadata
-          # Opsi build-arg tambahan jika Dockerfile Anda membutuhkannya
-          # build-args: |
-          #   APP_VERSION=1.0.0 # Contoh build-arg
-
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
