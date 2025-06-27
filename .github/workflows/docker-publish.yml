@@ -6,7 +6,7 @@ on:
   push:
     # Workflow akan berjalan ketika ada push ke branch 'main'
     branches:
-      - main
+      - master
     # Opsional: Jika Anda ingin memicu secara manual dari GitHub UI
     # workflow_dispatch:
 
